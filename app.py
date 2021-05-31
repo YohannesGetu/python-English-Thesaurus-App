@@ -1,34 +1,21 @@
-import json
-from difflib import get_close_matches
+import mysql.connector
 
-data = json.load(open("data.json"))
+con = mysql.connector.connect(
+    user = "username",
+    password = "password",
+    host = "host_address",
+    database = "database_name"
+)
 
+cursor = con.cursor() 
 
-def translate(word):
-    word = word.lower()
-    if word in data:
-        return data[word]
+word = input("Enter a word: ")
 
-    matched_data = get_close_matches(word, data.keys())
-    if len(matched_data) > 0:
-        yn = input(
-            "Did you mean %s instead? Enter Y if yes, or N if no: " % matched_data[0])
-        if yn == "Y":
-            return data[matched_data[0]]
-        elif yn == "N":
-            return "The word doesn't exist. Please double check it."
-        else:
-            return "We didn't understand your entry."
-    else:
-        return "The word doesn't exist. Please double check it."
+query = cursor.execute("SELECT * FROM Dictionary WHERE Expression = '%s' " % word)
+results = cursor.fetchall()
 
-
-word = input("Enter word: ")
-
-output = translate(word)
-
-if type(output) == list:
-    for item in output:
-        print(item)
+if results:
+    for result in results:
+        print(result[1])
 else:
-    print(output)
+    print("No word found!")
